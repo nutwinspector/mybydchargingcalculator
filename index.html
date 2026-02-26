@@ -1,255 +1,254 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ตัวช่วยคำนวณเวลาชาร์จ — BYD Dolphin Std. (50.25 kWh)</title>
-  <style>
-    :root{
-      --bg:#0b0b0c;           /* ดำสนิท */
-      --panel:#131316;        /* ดำเทา */
-      --soft:#1a1a1f;         /* เฉดพื้นหลัง */
-      --gold:#d4af37;         /* ทอง */
-      --gold-2:#b8891a;       /* ทองเข้ม สำหรับสลับสี */
-      --text:#e8e8ea;         /* ตัวอักษรหลัก */
-      --muted:#b8b8bf;        /* ตัวอักษรรอง */
-      --ok:#37d499;           /* เขียวเล็กน้อย */
-      --warn:#ffcc66;
-      --danger:#ff6b6b;
-      --border:#26262b;
-      --shadow: 0 8px 24px rgba(0,0,0,.45);
-      --radius:16px;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,"Noto Sans Thai",sans-serif;}
-    header{
-      position:sticky;top:0;z-index:10;
-      background:linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,.35) 100%);
-      backdrop-filter: blur(8px);
-      border-bottom:1px solid var(--border);
-    }
-    .wrap{max-width:880px;margin:0 auto;padding:20px;}
-    h1{font-size:1.35rem;margin:8px 0 2px;letter-spacing:.2px}
-    .sub{color:var(--muted);font-size:.95rem}
+<html lang="th"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BYD Dolphin Charge Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --gold: #D4AF37;
+            --gold-hover: #F3D568;
+            --text-light: #E0E0E0;
+            --card-bg-1: #1E1E1E;
+            --card-bg-2: #2A2411; /* ดำอมทองเพื่อใช้สลับสี */
+        }
+        
+        * { box-sizing: border-box; font-family: 'Prompt', sans-serif; }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 20px 15px;
+            display: flex;
+            justify-content: center;
+        }
 
-    .card{
-      background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
-      box-shadow:var(--shadow);
-    }
-    .card.pad{padding:16px}
+        .container {
+            width: 100%;
+            max-width: 450px; /* ขนาดพอดีหน้าจอมือถือ */
+        }
 
-    /* ฟอร์มอินพุต */
-    .grid{display:grid;gap:12px}
-    @media(min-width:560px){
-      .grid{grid-template-columns:1fr 1fr}
-      .actions{grid-column:1 / -1;display:flex;justify-content:flex-end}
-    }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 15px;
+        }
 
-    label{display:block;font-size:.9rem;margin:0 0 6px;color:var(--muted)}
+        .header h1 { color: var(--gold); font-size: 22px; margin: 0 0 5px 0; }
+        .header p { margin: 0; font-size: 14px; color: #aaa; }
 
-    .field{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);width:100%;outline:none}
-    .field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.18)}
-    .row{display:flex;flex-direction:column;gap:6px}
+        .input-group {
+            background: var(--card-bg-1);
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
+        }
 
-    .btn{cursor:pointer;align-self:flex-end;padding:12px 18px;border-radius:12px;border:1px solid var(--gold);color:#111;background:var(--gold);font-weight:600;letter-spacing:.2px}
-    .btn:hover{filter:brightness(1.05)}
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--gold);
+        }
 
-    @media(max-width:559.98px){.btn{width:100%}}
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s;
+        }
 
-    .hint{font-size:.85rem;color:var(--muted)}
-    .note{margin-top:8px;color:var(--muted);font-size:.85rem}
+        input:focus { border-color: var(--gold); }
 
-    /* การ์ดคำตอบ */
-    .answers{display:grid;gap:12px;margin-top:16px}
-    .answer-card{border-radius:16px;border:1px solid var(--border);background:var(--panel);overflow:hidden}
-    .answer-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px dashed var(--border)}
-    .amp{font-weight:700;letter-spacing:.3px}
-    .kW{font-size:.9rem;color:var(--muted)}
+        button.calc-btn {
+            width: 100%;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
-    .lines{padding:12px 14px;display:grid;gap:8px}
-    .line{display:flex;gap:8px;align-items:flex-start}
-    .bullet{width:8px;height:8px;border-radius:8px;margin-top:7px}
-    .text{flex:1}
+        button.calc-btn:hover { background: var(--gold-hover); }
 
-    /* ธีมการ์ดแบบสลับสี */
-    .gold .answer-head{background:linear-gradient(90deg, rgba(212,175,55,.18), transparent)}
-    .gold .amp{color:var(--gold)}
-    .gold .bullet{background:var(--gold)}
+        #result-container { margin-top: 20px; }
 
-    .gold2 .answer-head{background:linear-gradient(90deg, rgba(184,137,26,.22), transparent)}
-    .gold2 .amp{color:var(--gold-2)}
-    .gold2 .bullet{background:var(--gold-2)}
+        .result-card {
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 14.5px;
+            line-height: 1.6;
+            animation: fadeIn 0.5s ease-in-out;
+        }
 
-    footer{opacity:.8;margin:24px auto 36px;text-align:center;font-size:.85rem;color:var(--muted)}
-    .brand{color:var(--gold)}
-    .err{color:var(--danger)}
-  </style>
+        .result-card p { margin: 5px 0; }
+        .result-card span.highlight { color: var(--gold); font-weight: 600; }
+        .result-card hr { border: 0; border-top: 1px dashed #555; margin: 10px 0; }
+
+        /* สลับสีพื้นหลัง */
+        .card-bg-1 { background-color: var(--card-bg-1); }
+        .card-bg-2 { background-color: var(--card-bg-2); }
+
+        .dl-btn {
+            display: block; text-align: center; margin-top: 30px;
+            color: var(--text-light); text-decoration: underline; cursor: pointer;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <h1>ตัวช่วยคำนวณเวลาชาร์จ <span class="brand">BYD Dolphin Std.</span></h1>
-      <div class="sub">ความจุแบตฯ 50.25 kWh • เน้นใช้งานบนมือถือ • ธีมสีดำ-ทอง</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>⚡ EV Charge Calculator</h1>
+            <p>BYD Dolphin Std. (แบตเตอรี่ 50.25 kWh)</p>
+        </div>
+
+        <div class="input-group">
+            <label for="currentBat">🔋 ปริมาณแบตฯ คงเหลือ (%)</label>
+            <input type="number" id="currentBat" placeholder="ตัวอย่าง: 20" min="0" max="100">
+
+            <label for="startTime">⏱️ ชั่วโมง:นาที (เริ่มชาร์จ)</label>
+            <input type="time" id="startTime" required="">
+
+            <button class="calc-btn" onclick="calculateCharge()">คำนวณ</button>
+        </div>
+
+        <div id="result-container"><div class="result-card card-bg-1"><p>⚡ ชาร์จด้วยกระแส 16 แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">8 ชม. 50 นาที</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">02:50</span></p><hr><p>⚡ ชาร์จด้วยกระแส 16 แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">12 ชม. 18 นาที</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">06:18</span></p></div><div class="result-card card-bg-2"><p>⚡ ชาร์จด้วยกระแส 32 แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">4 ชม. 8 นาที</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">22:08</span></p><hr><p>⚡ ชาร์จด้วยกระแส 32 แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">5 ชม. 45 นาที</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">23:45</span></p></div><div class="result-card card-bg-1"><p>⚡ ชาร์จด้วยกระแส 8 แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">21 ชม. 21 นาที</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">15:21</span></p><hr><p>⚡ ชาร์จด้วยกระแส 8 แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">29 ชม. 44 นาที</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">23:43</span></p></div><div class="result-card card-bg-2"><p>⚡ ชาร์จด้วยกระแส 10 แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">15 ชม. 5 นาที</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">09:04</span></p><hr><p>⚡ ชาร์จด้วยกระแส 10 แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">20 ชม. 59 นาที</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">14:59</span></p></div></div>
+
+        <a class="dl-btn" onclick="downloadHTML()">📥 คลิกเพื่อดาวน์โหลด Web App นี้เก็บไว้ใช้</a>
     </div>
-  </header>
 
-  <main class="wrap" style="margin-top:12px">
-    <section class="card pad" aria-label="อินพุต">
-      <div class="grid">
-        <div class="row">
-          <label for="soc">ปริมาณแบตฯ คงเหลือ (%)</label>
-          <input id="soc" class="field" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="เช่น 35 หรือ 35.5" />
-          <div class="hint">กรอกค่าตั้งแต่ 0–100</div>
-        </div>
-        <div class="row">
-          <label for="start">ชั่วโมง:นาที</label>
-          <input id="start" class="field" type="time" step="60" placeholder="เช่น 21:30" />
-          <div class="hint">ระบุเวลาที่ต้องการ <u>เริ่ม</u> ชาร์จ</div>
-        </div>
-        <div class="row actions">
-          <button id="calc" class="btn">คำนวณ</button>
-        </div>
-      </div>
-      <div id="msg" class="note"></div>
-    </section>
+    <script>
+        const BATTERY_KWH = 50.25;
 
-    <section id="answers" class="answers" aria-live="polite" aria-busy="false">
-      <!-- การ์ดคำตอบจะถูกใส่ด้วยสคริปต์ โดยเรียง 16A, 32A, 8A, 10A -->
-    </section>
+        // อัตราการชาร์จตามจริง (หัก lost แล้ว) พร้อมเรียงลำดับการแสดงผลตามที่คุณต้องการ
+        const chargeRates = [
+            { amp: 16, kw: 2.9 },
+            { amp: 32, kw: 6.2 },
+            { amp: 8, kw: 1.2 },
+            { amp: 10, kw: 1.7 }
+        ];
 
-    <footer>
-      อัตราการชาร์จเป็นค่าใช้งานจริง (หักค่า loss แล้ว): 8A=1.2kW, 10A=1.7kW, 16A=2.9kW, 32A=6.2kW
-    </footer>
-  </main>
+        function calculateCharge() {
+            const currentBat = parseFloat(document.getElementById('currentBat').value);
+            const startTimeStr = document.getElementById('startTime').value;
+            const resultContainer = document.getElementById('result-container');
+            
+            resultContainer.innerHTML = ''; // ล้างผลลัพธ์เก่า
 
-<script>
-(() => {
-  const CAP_KWH = 50.25; // ความจุแบตฯ BYD Dolphin Std.
-  // อัตรากำลังไฟเข้ารถจริงตามที่ผู้ใช้ระบุ (kW)
-  const POWERS = {
-    8: 1.2,
-    10: 1.7,
-    16: 2.9,
-    32: 6.2,
-  };
+            if (isNaN(currentBat) || currentBat < 0 || currentBat > 100) {
+                alert("กรุณากรอก % แบตเตอรี่ให้ถูกต้อง (0-100)"); return;
+            }
+            if (!startTimeStr) {
+                alert("กรุณาระบุเวลาที่ต้องการเริ่มชาร์จ"); return;
+            }
 
-  const order = [16, 32, 8, 10]; // ลำดับการแสดงผลตามที่กำหนด
+            // คำนวณพลังงานที่ต้องการ (kWh)
+            let kwhTo80 = currentBat < 80 ? BATTERY_KWH * ((80 - currentBat) / 100) : 0;
+            let kwhTo100 = BATTERY_KWH * ((100 - currentBat) / 100);
 
-  const $ = (s, d=document) => d.querySelector(s);
-  const socEl = $("#soc");
-  const startEl = $("#start");
-  const calcBtn = $("#calc");
-  const answersEl = $("#answers");
-  const msgEl = $("#msg");
+            chargeRates.forEach((rate, index) => {
+                // คำนวณเวลา (ชั่วโมงทศนิยม)
+                let hoursTo80 = kwhTo80 / rate.kw;
+                let hoursTo100 = kwhTo100 / rate.kw;
 
-  function parseTimeToMinutes(value){
-    // รองรับรูปแบบ HH:MM (24h)
-    if(!value || !/^\d{2}:\d{2}$/.test(value)) return null;
-    const [hh, mm] = value.split(":").map(Number);
-    if(hh<0 || hh>23 || mm<0 || mm>59) return null;
-    return hh*60 + mm;
-  }
+                // รูปแบบเวลาที่ใช้ (ชั่วโมง นาที)
+                let duration80 = formatDuration(hoursTo80);
+                let duration100 = formatDuration(hoursTo100);
 
-  function minutesToHHMM(min){
-    min = ((min % (24*60)) + (24*60)) % (24*60); // ทำให้เป็นบวกภายใน 0–1439
-    const hh = Math.floor(min/60);
-    const mm = Math.round(min % 60);
-    return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-  }
+                // เวลาสิ้นสุด
+                let endTime80 = addTime(startTimeStr, hoursTo80);
+                let endTime100 = addTime(startTimeStr, hoursTo100);
 
-  function ceilToMinute(hours){
-    // ปัดขึ้นเป็นนาทีเพื่อไม่ให้ประเมินเวลาต่ำกว่าจริง
-    const mins = Math.ceil(hours * 60);
-    return mins;
-  }
+                // สร้างหน้าต่างผลลัพธ์
+                const cardClass = index % 2 === 0 ? 'card-bg-1' : 'card-bg-2'; // สลับสีตาม Index
+                const card = document.createElement('div');
+                card.className = `result-card ${cardClass}`;
 
-  function fmtDurationMins(mins){
-    if(mins <= 0) return "0 นาที";
-    const h = Math.floor(mins/60);
-    const m = mins % 60;
-    if(h>0 && m>0) return `${h} ชั่วโมง ${m} นาที`;
-    if(h>0) return `${h} ชั่วโมง`;
-    return `${m} นาที`;
-  }
+                let htmlTo80 = currentBat >= 80 
+                    ? `<p>⚡ ชาร์จด้วยกระแส ${rate.amp} แอมป์ จนถึง 80% <span class="highlight">แบตเตอรี่เกิน 80% แล้ว</span></p>`
+                    : `<p>⚡ ชาร์จด้วยกระแส ${rate.amp} แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">${duration80}</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">${startTimeStr}</span> จนถึง <span class="highlight">${endTime80}</span></p>`;
 
-  function computeTimeToTargetMinutes(socNow, targetPct, kW){
-    if(socNow >= targetPct) return 0;
-    const deltaPct = targetPct - socNow; // เปอร์เซ็นต์ที่ต้องเพิ่ม
-    const energyNeeded = CAP_KWH * (deltaPct/100); // kWh
-    const hours = energyNeeded / kW; // ชั่วโมง
-    return ceilToMinute(hours);
-  }
+                let htmlTo100 = currentBat === 100
+                    ? `<hr><p>⚡ แบตเตอรี่เต็ม 100% แล้ว</p>`
+                    : `<hr><p>⚡ ชาร์จด้วยกระแส ${rate.amp} แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">${duration100}</span></p>
+                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">${startTimeStr}</span> จนถึง <span class="highlight">${endTime100}</span></p>`;
 
-  function createAnswerCard(amp, kW, socNow, startMinutes, themeClass){
-    const to80 = computeTimeToTargetMinutes(socNow, 80, kW);
-    const to100 = computeTimeToTargetMinutes(socNow, 100, kW);
+                card.innerHTML = htmlTo80 + htmlTo100;
+                resultContainer.appendChild(card);
+            });
+        }
 
-    const end80 = minutesToHHMM(startMinutes + to80);
-    const end100 = minutesToHHMM(startMinutes + to100);
-    const startHHMM = minutesToHHMM(startMinutes);
+        // แปลงทศนิยมชั่วโมง เป็น "X ชม. Y นาที"
+        function formatDuration(decimalHours) {
+            if (decimalHours <= 0) return "0 นาที";
+            let h = Math.floor(decimalHours);
+            let m = Math.round((decimalHours - h) * 60);
+            if (m === 60) { h += 1; m = 0; }
+            
+            let result = "";
+            if (h > 0) result += `${h} ชม. `;
+            if (m > 0 || h === 0) result += `${m} นาที`;
+            return result.trim();
+        }
 
-    const container = document.createElement('article');
-    container.className = `answer-card ${themeClass}`;
+        // บวกเวลา
+        function addTime(startStr, addHours) {
+            if (addHours <= 0) return startStr;
+            let [h, m] = startStr.split(':').map(Number);
+            let date = new Date();
+            date.setHours(h, m, 0, 0);
+            
+            let addMins = addHours * 60;
+            date.setMinutes(date.getMinutes() + addMins);
+            
+            let resH = date.getHours().toString().padStart(2, '0');
+            let resM = date.getMinutes().toString().padStart(2, '0');
+            return `${resH}:${resM}`;
+        }
 
-    container.innerHTML = `
-      <div class="answer-head">
-        <div class="amp">กระแส ${amp} แอมป์</div>
-        <div class="kW">≈ ${kW.toFixed(1)} kW</div>
-      </div>
-      <div class="lines">
-        <div class="line"><span class="bullet"></span><div class="text">ชาร์จด้วยกระแส ${amp} แอมป์ จนถึง 80% จะใช้เวลา <b>${fmtDurationMins(to80)}</b></div></div>
-        <div class="line"><span class="bullet"></span><div class="text">ต้องเริ่มชาร์จเวลา <b>${startHHMM}</b> จนถึง <b>${end80}</b></div></div>
-        <div class="line"><span class="bullet"></span><div class="text">ชาร์จด้วยกระแส ${amp} แอมป์ จนถึง 100% จะใช้เวลา <b>${fmtDurationMins(to100)}</b></div></div>
-        <div class="line"><span class="bullet"></span><div class="text">ต้องเริ่มชาร์จเวลา <b>${startHHMM}</b> จนถึง <b>${end100}</b></div></div>
-      </div>
-    `;
+        // ฟังก์ชันสร้างไฟล์ HTML ให้ดาวน์โหลดตัวเอง
+        function downloadHTML() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'BYD_Dolphin_Charge.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
 
-    return container;
-  }
-
-  function validateInputs(){
-    const soc = parseFloat(socEl.value);
-    const t = parseTimeToMinutes(startEl.value);
-    let ok = true; let errs = [];
-
-    if(Number.isNaN(soc)) { ok = false; errs.push("โปรดกรอก ‘ปริมาณแบตฯ คงเหลือ (%)’"); }
-    else if(soc < 0 || soc > 100) { ok = false; errs.push("ค่าแบตฯ ต้องอยู่ระหว่าง 0–100%"); }
-
-    if(t === null) { ok = false; errs.push("โปรดระบุเวลาแบบ 24 ชั่วโมง เช่น 21:30"); }
-
-    return { ok, soc, t, errs };
-  }
-
-  function render(){
-    answersEl.setAttribute('aria-busy','true');
-    answersEl.innerHTML = '';
-
-    const v = validateInputs();
-    if(!v.ok){
-      msgEl.innerHTML = `<span class="err">${v.errs.join('<br>')}</span>`;
-      answersEl.setAttribute('aria-busy','false');
-      return;
-    }
-    msgEl.textContent = '';
-
-    // ใส่การ์ดตามลำดับ 16A, 32A, 8A, 10A และสลับธีม gold/gold2
-    order.forEach((amp, idx) => {
-      const kW = POWERS[amp];
-      const theme = (idx % 2 === 0) ? 'gold' : 'gold2';
-      const card = createAnswerCard(amp, kW, v.soc, v.t, theme);
-      answersEl.appendChild(card);
-    });
-
-    answersEl.setAttribute('aria-busy','false');
-  }
-
-  calcBtn.addEventListener('click', render);
-
-  // ช่วยให้ใช้งานรวดเร็วบนมือถือ: กด Enter เพื่อคำนวณ
-  [socEl, startEl].forEach(el => el.addEventListener('keydown', e => {
-    if(e.key === 'Enter') { e.preventDefault(); render(); }
-  }));
-})();
-</script>
-</body>
-</html>
+</body></html>
