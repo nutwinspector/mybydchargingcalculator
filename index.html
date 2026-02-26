@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ตัวช่วยคำนวณเวลาชาร์จ — BYD Dolphin Std. (50.25 kWh)</title>
+  <style>
+    :root{
+      --bg:#0b0b0c;           /* ดำสนิท */
+      --panel:#131316;        /* ดำเทา */
+      --soft:#1a1a1f;         /* เฉดพื้นหลัง */
+      --gold:#d4af37;         /* ทอง */
+      --gold-2:#b8891a;       /* ทองเข้ม สำหรับสลับสี */
+      --text:#e8e8ea;         /* ตัวอักษรหลัก */
+      --muted:#b8b8bf;        /* ตัวอักษรรอง */
+      --ok:#37d499;           /* เขียวเล็กน้อย */
+      --warn:#ffcc66;
+      --danger:#ff6b6b;
+      --border:#26262b;
+      --shadow: 0 8px 24px rgba(0,0,0,.45);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,"Noto Sans Thai",sans-serif;}
+    header{
+      position:sticky;top:0;z-index:10;
+      background:linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,.35) 100%);
+      backdrop-filter: blur(8px);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{max-width:880px;margin:0 auto;padding:20px;}
+    h1{font-size:1.35rem;margin:8px 0 2px;letter-spacing:.2px}
+    .sub{color:var(--muted);font-size:.95rem}
+
+    .card{
+      background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .card.pad{padding:16px}
+
+    /* ฟอร์มอินพุต */
+    .grid{display:grid;gap:12px}
+    @media(min-width:560px){
+      .grid{grid-template-columns:1fr 1fr}
+      .actions{grid-column:1 / -1;display:flex;justify-content:flex-end}
+    }
+
+    label{display:block;font-size:.9rem;margin:0 0 6px;color:var(--muted)}
+
+    .field{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);width:100%;outline:none}
+    .field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.18)}
+    .row{display:flex;flex-direction:column;gap:6px}
+
+    .btn{cursor:pointer;align-self:flex-end;padding:12px 18px;border-radius:12px;border:1px solid var(--gold);color:#111;background:var(--gold);font-weight:600;letter-spacing:.2px}
+    .btn:hover{filter:brightness(1.05)}
+
+    @media(max-width:559.98px){.btn{width:100%}}
+
+    .hint{font-size:.85rem;color:var(--muted)}
+    .note{margin-top:8px;color:var(--muted);font-size:.85rem}
+
+    /* การ์ดคำตอบ */
+    .answers{display:grid;gap:12px;margin-top:16px}
+    .answer-card{border-radius:16px;border:1px solid var(--border);background:var(--panel);overflow:hidden}
+    .answer-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px dashed var(--border)}
+    .amp{font-weight:700;letter-spacing:.3px}
+    .kW{font-size:.9rem;color:var(--muted)}
+
+    .lines{padding:12px 14px;display:grid;gap:8px}
+    .line{display:flex;gap:8px;align-items:flex-start}
+    .bullet{width:8px;height:8px;border-radius:8px;margin-top:7px}
+    .text{flex:1}
+
+    /* ธีมการ์ดแบบสลับสี */
+    .gold .answer-head{background:linear-gradient(90deg, rgba(212,175,55,.18), transparent)}
+    .gold .amp{color:var(--gold)}
+    .gold .bullet{background:var(--gold)}
+
+    .gold2 .answer-head{background:linear-gradient(90deg, rgba(184,137,26,.22), transparent)}
+    .gold2 .amp{color:var(--gold-2)}
+    .gold2 .bullet{background:var(--gold-2)}
+
+    footer{opacity:.8;margin:24px auto 36px;text-align:center;font-size:.85rem;color:var(--muted)}
+    .brand{color:var(--gold)}
+    .err{color:var(--danger)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>ตัวช่วยคำนวณเวลาชาร์จ <span class="brand">BYD Dolphin Std.</span></h1>
+      <div class="sub">ความจุแบตฯ 50.25 kWh • เน้นใช้งานบนมือถือ • ธีมสีดำ-ทอง</div>
+    </div>
+  </header>
+
+  <main class="wrap" style="margin-top:12px">
+    <section class="card pad" aria-label="อินพุต">
+      <div class="grid">
+        <div class="row">
+          <label for="soc">ปริมาณแบตฯ คงเหลือ (%)</label>
+          <input id="soc" class="field" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="เช่น 35 หรือ 35.5" />
+          <div class="hint">กรอกค่าตั้งแต่ 0–100</div>
+        </div>
+        <div class="row">
+          <label for="start">ชั่วโมง:นาที</label>
+          <input id="start" class="field" type="time" step="60" placeholder="เช่น 21:30" />
+          <div class="hint">ระบุเวลาที่ต้องการ <u>เริ่ม</u> ชาร์จ</div>
+        </div>
+        <div class="row actions">
+          <button id="calc" class="btn">คำนวณ</button>
+        </div>
+      </div>
+      <div id="msg" class="note"></div>
+    </section>
+
+    <section id="answers" class="answers" aria-live="polite" aria-busy="false">
+      <!-- การ์ดคำตอบจะถูกใส่ด้วยสคริปต์ โดยเรียง 16A, 32A, 8A, 10A -->
+    </section>
+
+    <footer>
+      อัตราการชาร์จเป็นค่าใช้งานจริง (หักค่า loss แล้ว): 8A=1.2kW, 10A=1.7kW, 16A=2.9kW, 32A=6.2kW
+    </footer>
+  </main>
+
+<script>
+(() => {
+  const CAP_KWH = 50.25; // ความจุแบตฯ BYD Dolphin Std.
+  // อัตรากำลังไฟเข้ารถจริงตามที่ผู้ใช้ระบุ (kW)
+  const POWERS = {
+    8: 1.2,
+    10: 1.7,
+    16: 2.9,
+    32: 6.2,
+  };
+
+  const order = [16, 32, 8, 10]; // ลำดับการแสดงผลตามที่กำหนด
+
+  const $ = (s, d=document) => d.querySelector(s);
+  const socEl = $("#soc");
+  const startEl = $("#start");
+  const calcBtn = $("#calc");
+  const answersEl = $("#answers");
+  const msgEl = $("#msg");
+
+  function parseTimeToMinutes(value){
+    // รองรับรูปแบบ HH:MM (24h)
+    if(!value || !/^\d{2}:\d{2}$/.test(value)) return null;
+    const [hh, mm] = value.split(":").map(Number);
+    if(hh<0 || hh>23 || mm<0 || mm>59) return null;
+    return hh*60 + mm;
+  }
+
+  function minutesToHHMM(min){
+    min = ((min % (24*60)) + (24*60)) % (24*60); // ทำให้เป็นบวกภายใน 0–1439
+    const hh = Math.floor(min/60);
+    const mm = Math.round(min % 60);
+    return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+  }
+
+  function ceilToMinute(hours){
+    // ปัดขึ้นเป็นนาทีเพื่อไม่ให้ประเมินเวลาต่ำกว่าจริง
+    const mins = Math.ceil(hours * 60);
+    return mins;
+  }
+
+  function fmtDurationMins(mins){
+    if(mins <= 0) return "0 นาที";
+    const h = Math.floor(mins/60);
+    const m = mins % 60;
+    if(h>0 && m>0) return `${h} ชั่วโมง ${m} นาที`;
+    if(h>0) return `${h} ชั่วโมง`;
+    return `${m} นาที`;
+  }
+
+  function computeTimeToTargetMinutes(socNow, targetPct, kW){
+    if(socNow >= targetPct) return 0;
+    const deltaPct = targetPct - socNow; // เปอร์เซ็นต์ที่ต้องเพิ่ม
+    const energyNeeded = CAP_KWH * (deltaPct/100); // kWh
+    const hours = energyNeeded / kW; // ชั่วโมง
+    return ceilToMinute(hours);
+  }
+
+  function createAnswerCard(amp, kW, socNow, startMinutes, themeClass){
+    const to80 = computeTimeToTargetMinutes(socNow, 80, kW);
+    const to100 = computeTimeToTargetMinutes(socNow, 100, kW);
+
+    const end80 = minutesToHHMM(startMinutes + to80);
+    const end100 = minutesToHHMM(startMinutes + to100);
+    const startHHMM = minutesToHHMM(startMinutes);
+
+    const container = document.createElement('article');
+    container.className = `answer-card ${themeClass}`;
+
+    container.innerHTML = `
+      <div class="answer-head">
+        <div class="amp">กระแส ${amp} แอมป์</div>
+        <div class="kW">≈ ${kW.toFixed(1)} kW</div>
+      </div>
+      <div class="lines">
+        <div class="line"><span class="bullet"></span><div class="text">ชาร์จด้วยกระแส ${amp} แอมป์ จนถึง 80% จะใช้เวลา <b>${fmtDurationMins(to80)}</b></div></div>
+        <div class="line"><span class="bullet"></span><div class="text">ต้องเริ่มชาร์จเวลา <b>${startHHMM}</b> จนถึง <b>${end80}</b></div></div>
+        <div class="line"><span class="bullet"></span><div class="text">ชาร์จด้วยกระแส ${amp} แอมป์ จนถึง 100% จะใช้เวลา <b>${fmtDurationMins(to100)}</b></div></div>
+        <div class="line"><span class="bullet"></span><div class="text">ต้องเริ่มชาร์จเวลา <b>${startHHMM}</b> จนถึง <b>${end100}</b></div></div>
+      </div>
+    `;
+
+    return container;
+  }
+
+  function validateInputs(){
+    const soc = parseFloat(socEl.value);
+    const t = parseTimeToMinutes(startEl.value);
+    let ok = true; let errs = [];
+
+    if(Number.isNaN(soc)) { ok = false; errs.push("โปรดกรอก ‘ปริมาณแบตฯ คงเหลือ (%)’"); }
+    else if(soc < 0 || soc > 100) { ok = false; errs.push("ค่าแบตฯ ต้องอยู่ระหว่าง 0–100%"); }
+
+    if(t === null) { ok = false; errs.push("โปรดระบุเวลาแบบ 24 ชั่วโมง เช่น 21:30"); }
+
+    return { ok, soc, t, errs };
+  }
+
+  function render(){
+    answersEl.setAttribute('aria-busy','true');
+    answersEl.innerHTML = '';
+
+    const v = validateInputs();
+    if(!v.ok){
+      msgEl.innerHTML = `<span class="err">${v.errs.join('<br>')}</span>`;
+      answersEl.setAttribute('aria-busy','false');
+      return;
+    }
+    msgEl.textContent = '';
+
+    // ใส่การ์ดตามลำดับ 16A, 32A, 8A, 10A และสลับธีม gold/gold2
+    order.forEach((amp, idx) => {
+      const kW = POWERS[amp];
+      const theme = (idx % 2 === 0) ? 'gold' : 'gold2';
+      const card = createAnswerCard(amp, kW, v.soc, v.t, theme);
+      answersEl.appendChild(card);
+    });
+
+    answersEl.setAttribute('aria-busy','false');
+  }
+
+  calcBtn.addEventListener('click', render);
+
+  // ช่วยให้ใช้งานรวดเร็วบนมือถือ: กด Enter เพื่อคำนวณ
+  [socEl, startEl].forEach(el => el.addEventListener('keydown', e => {
+    if(e.key === 'Enter') { e.preventDefault(); render(); }
+  }));
+})();
+</script>
+</body>
+</html>
