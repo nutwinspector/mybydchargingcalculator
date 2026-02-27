@@ -1,254 +1,502 @@
-<html lang="th"><head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BYD Dolphin Charge Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-dark: #121212;
-            --gold: #D4AF37;
-            --gold-hover: #F3D568;
-            --text-light: #E0E0E0;
-            --card-bg-1: #1E1E1E;
-            --card-bg-2: #2A2411; /* ดำอมทองเพื่อใช้สลับสี */
-        }
-        
-        * { box-sizing: border-box; font-family: 'Prompt', sans-serif; }
-        
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            margin: 0;
-            padding: 20px 15px;
-            display: flex;
-            justify-content: center;
-        }
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BYD Dolphin Charging Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #8A6E2F;
+    --black: #0A0A0A;
+    --dark: #111111;
+    --dark2: #1A1A1A;
+    --dark3: #222222;
+    --dark4: #2A2A2A;
+    --text: #F0E6CC;
+    --text-dim: #9A8A6A;
+  }
 
-        .container {
-            width: 100%;
-            max-width: 450px; /* ขนาดพอดีหน้าจอมือถือ */
-        }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid var(--gold);
-            padding-bottom: 15px;
-        }
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    min-height: 100vh;
+    background-image: 
+      radial-gradient(ellipse at top, #1a1200 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+  }
 
-        .header h1 { color: var(--gold); font-size: 22px; margin: 0 0 5px 0; }
-        .header p { margin: 0; font-size: 14px; color: #aaa; }
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+  }
 
-        .input-group {
-            background: var(--card-bg-1);
-            border: 1px solid var(--gold);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
-        }
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 28px 0 24px;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 16px auto 0;
+  }
+  .car-icon {
+    font-size: 2.8rem;
+    line-height: 1;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 12px rgba(201,168,76,0.5));
+  }
+  .header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(201,168,76,0.4);
+  }
+  .header .subtitle {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+  .battery-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.75rem;
+    color: var(--gold);
+    margin-top: 10px;
+  }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--gold);
-        }
+  /* Card */
+  .card {
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 16px;
+    padding: 22px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,168,76,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
-            transition: border 0.3s;
-        }
+  .field-group {
+    margin-bottom: 18px;
+  }
+  .field-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+  }
 
-        input:focus { border-color: var(--gold); }
+  input[type="number"], input[type="time"] {
+    width: 100%;
+    background: var(--dark);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-size: 1.1rem;
+    font-family: 'Sarabun', sans-serif;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+    -webkit-appearance: none;
+  }
+  input[type="number"]:focus, input[type="time"]:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+  }
+  input[type="number"]::placeholder { color: var(--text-dim); }
+  input:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
 
-        button.calc-btn {
-            width: 100%;
-            background: var(--gold);
-            color: #000;
-            border: none;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
+  /* Checkbox */
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .checkbox-row input[type="checkbox"] {
+    display: none;
+  }
+  .custom-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(201,168,76,0.5);
+    border-radius: 6px;
+    background: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .custom-check .check-mark {
+    display: none;
+    color: var(--black);
+    font-size: 0.75rem;
+    font-weight: 900;
+  }
+  .checkbox-row input[type="checkbox"]:checked + .custom-check {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+  .checkbox-row input[type="checkbox"]:checked + .custom-check .check-mark {
+    display: block;
+  }
+  .check-label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
 
-        button.calc-btn:hover { background: var(--gold-hover); }
+  /* Button */
+  .btn-calc {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold-dim), var(--gold), var(--gold-light), var(--gold));
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--black);
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(201,168,76,0.3);
+    animation: shimmer 3s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .btn-calc:active { transform: scale(0.98); }
+  .btn-calc:hover { box-shadow: 0 6px 28px rgba(201,168,76,0.5); }
 
-        #result-container { margin-top: 20px; }
+  /* Results */
+  .results-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 14px;
+    opacity: 0.8;
+  }
 
-        .result-card {
-            border: 1px solid var(--gold);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            font-size: 14.5px;
-            line-height: 1.6;
-            animation: fadeIn 0.5s ease-in-out;
-        }
+  .amp-card {
+    border-radius: 14px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(201,168,76,0.2);
+    animation: fadeUp 0.4s ease forwards;
+    opacity: 0;
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(12px); }
+  }
 
-        .result-card p { margin: 5px 0; }
-        .result-card span.highlight { color: var(--gold); font-weight: 600; }
-        .result-card hr { border: 0; border-top: 1px dashed #555; margin: 10px 0; }
+  .amp-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: linear-gradient(90deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05));
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+  .amp-badge {
+    background: var(--gold);
+    color: var(--black);
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .amp-power {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
 
-        /* สลับสีพื้นหลัง */
-        .card-bg-1 { background-color: var(--card-bg-1); }
-        .card-bg-2 { background-color: var(--card-bg-2); }
+  .result-row {
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-row.alt { background: rgba(255,255,255,0.025); }
 
-        .dl-btn {
-            display: block; text-align: center; margin-top: 30px;
-            color: var(--text-light); text-decoration: underline; cursor: pointer;
-            font-size: 14px;
-        }
+  .result-label {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .result-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .result-value .highlight { color: var(--gold-light); }
+  .result-value .time-range { color: var(--gold); font-weight: 500; }
+  .result-value .done { color: #8CD978; }
+  .result-value .next-day { color: #FF9966; font-size: 0.8rem; font-weight: 400; margin-left: 4px; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+  /* Card color variants */
+  .amp-card.c16 { border-color: rgba(91,200,245,0.25); }
+  .amp-card.c16 .amp-header { background: linear-gradient(90deg, rgba(91,200,245,0.12), transparent); border-color: rgba(91,200,245,0.2); }
+  .amp-card.c16 .amp-badge { background: #5BC8F5; }
+
+  .amp-card.c32 { border-color: rgba(255,120,80,0.25); }
+  .amp-card.c32 .amp-header { background: linear-gradient(90deg, rgba(255,120,80,0.12), transparent); border-color: rgba(255,120,80,0.2); }
+  .amp-card.c32 .amp-badge { background: #FF7850; }
+
+  .amp-card.c8 { border-color: rgba(140,217,120,0.25); }
+  .amp-card.c8 .amp-header { background: linear-gradient(90deg, rgba(140,217,120,0.12), transparent); border-color: rgba(140,217,120,0.2); }
+  .amp-card.c8 .amp-badge { background: #8CD978; }
+
+  .amp-card.c10 { border-color: rgba(201,168,76,0.3); }
+  .amp-card.c10 .amp-header { background: linear-gradient(90deg, rgba(201,168,76,0.15), transparent); border-color: rgba(201,168,76,0.3); }
+  .amp-card.c10 .amp-badge { background: var(--gold); }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent);
+    margin: 20px 0;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 20px 0 8px;
+    font-size: 0.68rem;
+    color: rgba(201,168,76,0.3);
+    letter-spacing: 1px;
+  }
+
+  #results { display: none; }
+</style>
 </head>
 <body>
+<div class="container">
 
-    <div class="container">
-        <div class="header">
-            <h1>⚡ EV Charge Calculator</h1>
-            <p>BYD Dolphin Std. (แบตเตอรี่ 50.25 kWh)</p>
-        </div>
+  <!-- Header -->
+  <div class="header">
+    <div class="car-icon">⚡</div>
+    <h1>BYD DOLPHIN</h1>
+    <div class="subtitle">CHARGING CALCULATOR</div>
+    <div class="battery-info">🔋 Battery 50.25 kWh · Std.</div>
+  </div>
 
-        <div class="input-group">
-            <label for="currentBat">🔋 ปริมาณแบตฯ คงเหลือ (%)</label>
-            <input type="number" id="currentBat" placeholder="ตัวอย่าง: 20" min="0" max="100">
-
-            <label for="startTime">⏱️ ชั่วโมง:นาที (เริ่มชาร์จ)</label>
-            <input type="time" id="startTime" required="">
-
-            <button class="calc-btn" onclick="calculateCharge()">คำนวณ</button>
-        </div>
-
-        <div id="result-container"><div class="result-card card-bg-1"><p>⚡ ชาร์จด้วยกระแส 16 แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">8 ชม. 50 นาที</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">02:50</span></p><hr><p>⚡ ชาร์จด้วยกระแส 16 แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">12 ชม. 18 นาที</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">06:18</span></p></div><div class="result-card card-bg-2"><p>⚡ ชาร์จด้วยกระแส 32 แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">4 ชม. 8 นาที</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">22:08</span></p><hr><p>⚡ ชาร์จด้วยกระแส 32 แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">5 ชม. 45 นาที</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">23:45</span></p></div><div class="result-card card-bg-1"><p>⚡ ชาร์จด้วยกระแส 8 แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">21 ชม. 21 นาที</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">15:21</span></p><hr><p>⚡ ชาร์จด้วยกระแส 8 แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">29 ชม. 44 นาที</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">23:43</span></p></div><div class="result-card card-bg-2"><p>⚡ ชาร์จด้วยกระแส 10 แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">15 ชม. 5 นาที</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">09:04</span></p><hr><p>⚡ ชาร์จด้วยกระแส 10 แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">20 ชม. 59 นาที</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">18:00</span> จนถึง <span class="highlight">14:59</span></p></div></div>
-
-        <a class="dl-btn" onclick="downloadHTML()">📥 คลิกเพื่อดาวน์โหลด Web App นี้เก็บไว้ใช้</a>
+  <!-- Input Card -->
+  <div class="card">
+    <div class="field-group">
+      <div class="field-label">🔋 ปริมาณแบตฯ คงเหลือ (%)</div>
+      <input type="number" id="battery" min="0" max="100" placeholder="กรอกตัวเลข เช่น 30" inputmode="numeric">
     </div>
 
-    <script>
-        const BATTERY_KWH = 50.25;
+    <div class="field-group">
+      <div class="field-label">⏰ เวลาที่ต้องการชาร์จเสร็จ</div>
+      <input type="time" id="target-time" value="08:00">
+      <label class="checkbox-row" onclick="toggleNoTime()">
+        <input type="checkbox" id="no-time">
+        <div class="custom-check"><span class="check-mark">✓</span></div>
+        <span class="check-label">ไม่ระบุเวลาชาร์จเสร็จ</span>
+      </label>
+    </div>
 
-        // อัตราการชาร์จตามจริง (หัก lost แล้ว) พร้อมเรียงลำดับการแสดงผลตามที่คุณต้องการ
-        const chargeRates = [
-            { amp: 16, kw: 2.9 },
-            { amp: 32, kw: 6.2 },
-            { amp: 8, kw: 1.2 },
-            { amp: 10, kw: 1.7 }
-        ];
+    <button class="btn-calc" onclick="calculate()">⚡ คำนวณ</button>
+  </div>
 
-        function calculateCharge() {
-            const currentBat = parseFloat(document.getElementById('currentBat').value);
-            const startTimeStr = document.getElementById('startTime').value;
-            const resultContainer = document.getElementById('result-container');
-            
-            resultContainer.innerHTML = ''; // ล้างผลลัพธ์เก่า
+  <!-- Results -->
+  <div id="results">
+    <div class="divider"></div>
+    <div class="results-title">— ผลการคำนวณ —</div>
+    <div id="result-cards"></div>
+  </div>
 
-            if (isNaN(currentBat) || currentBat < 0 || currentBat > 100) {
-                alert("กรุณากรอก % แบตเตอรี่ให้ถูกต้อง (0-100)"); return;
-            }
-            if (!startTimeStr) {
-                alert("กรุณาระบุเวลาที่ต้องการเริ่มชาร์จ"); return;
-            }
+  <div class="footer">Created by nutwinspector</div>
+</div>
 
-            // คำนวณพลังงานที่ต้องการ (kWh)
-            let kwhTo80 = currentBat < 80 ? BATTERY_KWH * ((80 - currentBat) / 100) : 0;
-            let kwhTo100 = BATTERY_KWH * ((100 - currentBat) / 100);
+<script>
+const BATTERY_KWH = 50.25;
+const CHARGERS = [
+  { amp: 16, kw: 2.9, cls: 'c16', icon: '⚡' },
+  { amp: 32, kw: 6.2, cls: 'c32', icon: '🚀' },
+  { amp:  8, kw: 1.2, cls: 'c8',  icon: '🌿' },
+  { amp: 10, kw: 1.7, cls: 'c10', icon: '✨' },
+];
 
-            chargeRates.forEach((rate, index) => {
-                // คำนวณเวลา (ชั่วโมงทศนิยม)
-                let hoursTo80 = kwhTo80 / rate.kw;
-                let hoursTo100 = kwhTo100 / rate.kw;
+function toggleNoTime() {
+  // Let the browser handle checkbox toggle first, then sync
+  setTimeout(() => {
+    const checked = document.getElementById('no-time').checked;
+    const timeInput = document.getElementById('target-time');
+    timeInput.disabled = checked;
+  }, 0);
+}
 
-                // รูปแบบเวลาที่ใช้ (ชั่วโมง นาที)
-                let duration80 = formatDuration(hoursTo80);
-                let duration100 = formatDuration(hoursTo100);
+function formatDuration(hours) {
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  if (h === 0) return `${m} นาที`;
+  if (m === 0) return `${h} ชั่วโมง`;
+  return `${h} ชม. ${m} นาที`;
+}
 
-                // เวลาสิ้นสุด
-                let endTime80 = addTime(startTimeStr, hoursTo80);
-                let endTime100 = addTime(startTimeStr, hoursTo100);
+// Returns { display: "HH:MM", nextDay: bool }
+function addMinutesToNow(minutes) {
+  const now = new Date();
+  const finish = new Date(now.getTime() + minutes * 60000);
+  const hh = String(finish.getHours()).padStart(2, '0');
+  const mm = String(finish.getMinutes()).padStart(2, '0');
+  const sameDay = finish.getDate() === now.getDate() &&
+                  finish.getMonth() === now.getMonth() &&
+                  finish.getFullYear() === now.getFullYear();
+  return { display: `${hh}:${mm}`, nextDay: !sameDay };
+}
 
-                // สร้างหน้าต่างผลลัพธ์
-                const cardClass = index % 2 === 0 ? 'card-bg-1' : 'card-bg-2'; // สลับสีตาม Index
-                const card = document.createElement('div');
-                card.className = `result-card ${cardClass}`;
+function subtractMinutes(timeStr, minutes) {
+  const [h, m] = timeStr.split(':').map(Number);
+  let total = h * 60 + m - Math.round(minutes);
+  total = ((total % 1440) + 1440) % 1440;
+  const hh = String(Math.floor(total / 60)).padStart(2, '0');
+  const mm = String(total % 60).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
 
-                let htmlTo80 = currentBat >= 80 
-                    ? `<p>⚡ ชาร์จด้วยกระแส ${rate.amp} แอมป์ จนถึง 80% <span class="highlight">แบตเตอรี่เกิน 80% แล้ว</span></p>`
-                    : `<p>⚡ ชาร์จด้วยกระแส ${rate.amp} แอมป์ จนถึง 80% จะใช้เวลา <span class="highlight">${duration80}</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">${startTimeStr}</span> จนถึง <span class="highlight">${endTime80}</span></p>`;
+function nowStr() {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+}
 
-                let htmlTo100 = currentBat === 100
-                    ? `<hr><p>⚡ แบตเตอรี่เต็ม 100% แล้ว</p>`
-                    : `<hr><p>⚡ ชาร์จด้วยกระแส ${rate.amp} แอมป์ จนถึง 100% จะใช้เวลา <span class="highlight">${duration100}</span></p>
-                       <p>ต้องเริ่มชาร์จเวลา <span class="highlight">${startTimeStr}</span> จนถึง <span class="highlight">${endTime100}</span></p>`;
+function calculate() {
+  const battPct = parseFloat(document.getElementById('battery').value);
+  const noTime  = document.getElementById('no-time').checked;
+  const targetTime = document.getElementById('target-time').value;
 
-                card.innerHTML = htmlTo80 + htmlTo100;
-                resultContainer.appendChild(card);
-            });
-        }
+  if (isNaN(battPct) || battPct < 0 || battPct > 100) {
+    alert('กรุณากรอกปริมาณแบตฯ ให้ถูกต้อง (0–100%)');
+    return;
+  }
+  if (!noTime && !targetTime) {
+    alert('กรุณาระบุเวลาที่ต้องการชาร์จเสร็จ หรือติ๊ก "ไม่ระบุเวลาชาร์จเสร็จ"');
+    return;
+  }
 
-        // แปลงทศนิยมชั่วโมง เป็น "X ชม. Y นาที"
-        function formatDuration(decimalHours) {
-            if (decimalHours <= 0) return "0 นาที";
-            let h = Math.floor(decimalHours);
-            let m = Math.round((decimalHours - h) * 60);
-            if (m === 60) { h += 1; m = 0; }
-            
-            let result = "";
-            if (h > 0) result += `${h} ชม. `;
-            if (m > 0 || h === 0) result += `${m} นาที`;
-            return result.trim();
-        }
+  const currentKwh = BATTERY_KWH * (battPct / 100);
+  const kwh80  = BATTERY_KWH * 0.80;
+  const kwh100 = BATTERY_KWH * 1.00;
 
-        // บวกเวลา
-        function addTime(startStr, addHours) {
-            if (addHours <= 0) return startStr;
-            let [h, m] = startStr.split(':').map(Number);
-            let date = new Date();
-            date.setHours(h, m, 0, 0);
-            
-            let addMins = addHours * 60;
-            date.setMinutes(date.getMinutes() + addMins);
-            
-            let resH = date.getHours().toString().padStart(2, '0');
-            let resM = date.getMinutes().toString().padStart(2, '0');
-            return `${resH}:${resM}`;
-        }
+  const cards = document.getElementById('result-cards');
+  cards.innerHTML = '';
 
-        // ฟังก์ชันสร้างไฟล์ HTML ให้ดาวน์โหลดตัวเอง
-        function downloadHTML() {
-            const htmlContent = document.documentElement.outerHTML;
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'BYD_Dolphin_Charge.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-    </script>
+  CHARGERS.forEach((c, idx) => {
+    const needed80  = Math.max(0, kwh80  - currentKwh);
+    const needed100 = Math.max(0, kwh100 - currentKwh);
+    const mins80    = (needed80  / c.kw) * 60;
+    const mins100   = (needed100 / c.kw) * 60;
+    const dur80     = formatDuration(needed80  / c.kw);
+    const dur100    = formatDuration(needed100 / c.kw);
+    const already80  = battPct >= 80;
+    const already100 = battPct >= 100;
 
-</body></html>
+    let row2html, row4html;
+
+    if (noTime) {
+      // Mode: show actual finish time from NOW
+      const f80  = addMinutesToNow(mins80);
+      const f100 = addMinutesToNow(mins100);
+      const start = nowStr();
+      row2html = already80
+        ? `<span class="done">แบตฯ เกิน 80% แล้ว ✓</span>`
+        : `<span class="time-range">${start} น. → ${f80.display} น.${f80.nextDay ? '<span class="next-day">(วันถัดไป)</span>' : ''}</span>`;
+      row4html = already100
+        ? `<span class="done">แบตฯ เต็มแล้ว ✓</span>`
+        : `<span class="time-range">${start} น. → ${f100.display} น.${f100.nextDay ? '<span class="next-day">(วันถัดไป)</span>' : ''}</span>`;
+    } else {
+      // Mode: back-calculate start time from target
+      const start80  = subtractMinutes(targetTime, mins80);
+      const start100 = subtractMinutes(targetTime, mins100);
+      row2html = already80
+        ? `<span class="done">แบตฯ เกิน 80% แล้ว ✓</span>`
+        : `<span class="time-range">${start80} → ${targetTime} น.</span>`;
+      row4html = already100
+        ? `<span class="done">แบตฯ เต็มแล้ว ✓</span>`
+        : `<span class="time-range">${start100} → ${targetTime} น.</span>`;
+    }
+
+    const card = document.createElement('div');
+    card.className = `amp-card ${c.cls}`;
+    card.style.animationDelay = `${idx * 0.08}s`;
+    card.innerHTML = `
+      <div class="amp-header">
+        <span class="amp-badge">${c.amp}A</span>
+        <span class="amp-power">${c.icon} กำลังชาร์จจริง ${c.kw} kW</span>
+      </div>
+      <div class="result-row">
+        <div class="result-label">🔋 ชาร์จ ${c.amp}A จนถึง 80%</div>
+        <div class="result-value">
+          ${already80 ? '<span class="done">แบตฯ เกิน 80% แล้ว ✓</span>' : `ใช้เวลา <span class="highlight">${dur80}</span>`}
+        </div>
+      </div>
+      <div class="result-row alt">
+        <div class="result-label">⏱️ ${noTime ? 'เริ่มชาร์จตอนนี้ ถึง' : 'ต้องเริ่มชาร์จเวลา'}</div>
+        <div class="result-value">${row2html}</div>
+      </div>
+      <div class="result-row">
+        <div class="result-label">⚡ ชาร์จ ${c.amp}A จนถึง 100%</div>
+        <div class="result-value">
+          ${already100 ? '<span class="done">แบตฯ เต็มแล้ว ✓</span>' : `ใช้เวลา <span class="highlight">${dur100}</span>`}
+        </div>
+      </div>
+      <div class="result-row alt">
+        <div class="result-label">⏱️ ${noTime ? 'เริ่มชาร์จตอนนี้ ถึง' : 'ต้องเริ่มชาร์จเวลา'}</div>
+        <div class="result-value">${row4html}</div>
+      </div>
+    `;
+    cards.appendChild(card);
+  });
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
