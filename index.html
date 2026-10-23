@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BYD Dolphin Charging Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-l:#E8C97A;--gold-d:#8A6E2F;--bg:#0A0A0A;--d1:#111;--d2:#1A1A1A;--d3:#222;--text:#F0E6CC;--dim:#9A8A6A;--ok:#8CD978;--warn:#FF9966;--bad:#FF6B6B;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background-color:var(--bg);color:var(--text);font:16px 'Sarabun',system-ui,sans-serif;min-height:100vh;background-image:radial-gradient(ellipse at top,#1a1200 0%,transparent 60%),repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(201,168,76,.03) 40px,rgba(201,168,76,.03) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(201,168,76,.03) 40px,rgba(201,168,76,.03) 41px)}
+.container{max-width:480px;margin:0 auto;padding:20px 16px 40px}
+.header{text-align:center;padding:24px 0}
+.header::after{content:'';display:block;width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto 0}
+.car-icon{font-size:2.6rem;line-height:1;margin-bottom:8px;filter:drop-shadow(0 0 12px rgba(201,168,76,.5))}
+h1{font-family:'Cinzel',serif;font-size:1.3rem;color:var(--gold-l);letter-spacing:2px;text-shadow:0 0 20px rgba(201,168,76,.4)}
+.subtitle{font-size:.8rem;color:var(--dim);margin-top:4px;letter-spacing:1px}
+.pill{display:inline-block;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:20px;padding:4px 14px;font-size:.75rem;color:var(--gold);margin-top:10px}
+.card{background:linear-gradient(135deg,var(--d2),var(--d3));border:1px solid rgba(201,168,76,.25);border-radius:16px;padding:22px 20px;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,.5),inset 0 1px 0 rgba(201,168,76,.1)}
+.field{margin-bottom:18px}.field:last-child{margin-bottom:0}
+.field-label{display:block;font-size:.85rem;font-weight:500;color:var(--gold-l);margin-bottom:8px}
+input[type=number],input[type=time]{width:100%;background:var(--d1);border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:13px 16px;font:inherit;font-size:1.1rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s,opacity .2s;-webkit-appearance:none;appearance:none}
+input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
+input::placeholder{color:var(--dim)}
+input:disabled{opacity:.35;cursor:not-allowed}
+.err{color:var(--bad);font-size:.78rem;margin-top:6px;min-height:0}.err:empty{display:none}
+.chips{display:flex;gap:8px;margin-top:10px}
+.chip{flex:1;padding:8px 0;border-radius:8px;border:1px solid rgba(201,168,76,.3);background:var(--d1);color:var(--dim);font:inherit;font-size:.9rem;cursor:pointer}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#0A0A0A;font-weight:600}
+.chip:focus-visible,.row:focus-visible,.refresh:focus-visible{outline:2px solid var(--gold-l);outline-offset:2px}
+.check{display:flex;align-items:center;gap:10px;margin-top:10px;cursor:pointer;user-select:none;position:relative}
+.check input{position:absolute;opacity:0;width:20px;height:20px;margin:0}
+.box{width:20px;height:20px;border:2px solid rgba(201,168,76,.5);border-radius:6px;background:var(--d1);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:transparent;font-size:.75rem;font-weight:900;transition:all .2s}
+.check input:checked+.box{background:var(--gold);border-color:var(--gold);color:#0A0A0A}
+.check input:focus-visible+.box{outline:2px solid var(--gold-l);outline-offset:2px}
+.check-text{font-size:.85rem;color:var(--dim)}
+#results{display:none}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent);margin:4px 0 20px}
+.banner{padding:12px 14px;border-radius:12px;font-size:.88rem;line-height:1.45;margin-bottom:14px;border:1px solid}
+.banner.good{background:rgba(140,217,120,.08);border-color:rgba(140,217,120,.3);color:var(--ok)}
+.banner.warn{background:rgba(255,153,102,.08);border-color:rgba(255,153,102,.3);color:var(--warn)}
+.banner.info{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.25);color:var(--gold-l)}
+.c8{--c:#8CD978}.c10{--c:#C9A84C}.c16{--c:#5BC8F5}.c32{--c:#FF7850}
+.item{border:1px solid rgba(201,168,76,.2);border-left:3px solid var(--c);border-radius:12px;margin-bottom:10px;background:linear-gradient(135deg,var(--d2),var(--d3));overflow:hidden}
+.item.best{box-shadow:0 0 0 1px var(--gold),0 4px 20px rgba(201,168,76,.22)}
+.row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;cursor:pointer}
+.row:focus-visible{outline:2px solid var(--gold-l);outline-offset:-2px}
+.badge{background:var(--c);color:#0A0A0A;font-family:'Cinzel',serif;font-weight:700;font-size:.85rem;padding:4px 10px;border-radius:20px;min-width:54px;text-align:center}
+.main{flex:1;min-width:0}
+.l1{font-weight:600;font-size:.98rem}
+.l2{font-size:.8rem;color:var(--gold);margin-top:2px}
+.tag{font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.tag.best{background:var(--gold);color:#0A0A0A}
+.tag.late{background:rgba(255,107,107,.15);color:var(--bad)}
+.ok{color:var(--ok)}
+.chev{color:var(--dim);font-size:.8rem;transition:transform .2s}
+.item.open .chev{transform:rotate(180deg)}
+.detail{display:none;padding:0 14px 8px;border-top:1px solid rgba(255,255,255,.05)}
+.item.open .detail{display:block}
+.drow{display:flex;justify-content:space-between;gap:12px;font-size:.82rem;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.drow:last-child{border-bottom:none}
+.drow span:first-child{color:var(--dim)}
+.updated{display:flex;align-items:center;justify-content:center;gap:8px;font-size:.75rem;color:var(--dim);margin-top:6px}
+.refresh{all:unset;box-sizing:border-box;cursor:pointer;color:var(--gold);padding:4px 10px;border:1px solid rgba(201,168,76,.3);border-radius:14px}
+.refresh:focus-visible{outline:2px solid var(--gold-l);outline-offset:2px}
+.footer{text-align:center;padding:20px 0 8px;font-size:.68rem;color:rgba(201,168,76,.4);letter-spacing:1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="car-icon">⚡</div>
+    <h1>BYD DOLPHIN</h1>
+    <div class="subtitle">CHARGING CALCULATOR</div>
+    <div class="pill">🔋 Battery 50.25 kWh · Std.</div>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label class="field-label" for="battery">🔋 ปริมาณแบตฯ คงเหลือ (%)</label>
+      <input type="number" id="battery" min="0" max="100" step="any" placeholder="กรอกตัวเลข เช่น 30" inputmode="decimal">
+      <div class="err" id="err-b" role="alert"></div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="tgt">🎯 ชาร์จถึง (%)</label>
+      <input type="number" id="tgt" min="1" max="100" step="any" value="80" inputmode="decimal">
+      <div class="chips" id="chips">
+        <button type="button" class="chip" data-v="70">70%</button>
+        <button type="button" class="chip" data-v="80">80%</button>
+        <button type="button" class="chip" data-v="90">90%</button>
+        <button type="button" class="chip" data-v="100">100%</button>
+      </div>
+      <div class="err" id="err-t" role="alert"></div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="target-time">⏰ เวลาที่ต้องการชาร์จเสร็จ</label>
+      <input type="time" id="target-time" value="08:00">
+      <label class="check">
+        <input type="checkbox" id="no-time">
+        <span class="box">✓</span>
+        <span class="check-text">ไม่ระบุเวลาชาร์จเสร็จ</span>
+      </label>
+    </div>
+  </div>
+
+  <div id="results">
+    <div class="divider"></div>
+    <div class="banner" id="banner"></div>
+    <div id="list"></div>
+    <div class="updated"><span id="upd"></span><button type="button" class="refresh" id="refresh" aria-label="คำนวณใหม่จากเวลาปัจจุบัน">↻ อัปเดต</button></div>
+  </div>
+
+  <div class="footer">Created by nutwinspector · V4</div>
+</div>
+
+<script>
+const BATT = 50.25;
+const CH = [
+  { a: 8,  kw: 1.2, c: 'c8',  i: '🌿' },
+  { a: 10, kw: 1.7, c: 'c10', i: '✨' },
+  { a: 16, kw: 2.9, c: 'c16', i: '⚡' },
+  { a: 32, kw: 6.2, c: 'c32', i: '🚀' }
+];
+const KEY = 'byd_calc_v4';
+const $ = id => document.getElementById(id);
+let open = new Set();
+
+const p2 = n => String(n).padStart(2, '0');
+const hm = d => p2(d.getHours()) + ':' + p2(d.getMinutes());
+function dur(min) {
+  const h = Math.floor(min / 60), m = min % 60;
+  if (!h) return m + ' นาที';
+  if (!m) return h + ' ชม.';
+  return h + ' ชม. ' + m + ' นาที';
+}
+function dayTag(d, now) {
+  const a = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const n = Math.round((a - b) / 864e5);
+  return n <= 0 ? '' : n === 1 ? ' (พรุ่งนี้)' : ' (+' + n + ' วัน)';
+}
+const when = (d, now) => hm(d) + ' น.' + dayTag(d, now);
+
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify({
+      b: $('battery').value, t: $('tgt').value, tm: $('target-time').value,
+      nt: $('no-time').checked, o: [...open]
+    }));
+  } catch (e) {}
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (!s) return;
+    $('battery').value = s.b || '';
+    $('tgt').value = s.t || 80;
+    if (s.tm) $('target-time').value = s.tm;
+    $('no-time').checked = !!s.nt;
+    open = new Set(s.o || []);
+  } catch (e) {}
+}
+
+function calc(scroll) {
+  const bv = $('battery').value, tv = $('tgt').value;
+  const b = parseFloat(bv), t = parseFloat(tv);
+  const noT = $('no-time').checked, tt = $('target-time').value;
+
+  $('err-b').textContent = bv !== '' && !(b >= 0 && b <= 100) ? 'กรุณากรอกปริมาณแบตฯ 0–100%' : '';
+  $('err-t').textContent = !(t >= 1 && t <= 100) ? 'กรุณากรอกเป้าหมาย 1–100%' : '';
+  $('target-time').disabled = noT;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', parseFloat(c.dataset.v) === t));
+  save();
+
+  if ($('err-b').textContent || $('err-t').textContent || bv === '' || (!noT && !tt)) {
+    $('results').style.display = 'none';
+    return;
+  }
+
+  const now = new Date(); now.setSeconds(0, 0);
+  const need = Math.max(0, BATT * (t - b) / 100);
+
+  let target = null;
+  if (!noT) {
+    const [h, m] = tt.split(':').map(Number);
+    target = new Date(now); target.setHours(h, m, 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1);
+  }
+
+  const rows = CH.map(c => {
+    const mins = Math.round(need / c.kw * 60);
+    const r = { c, mins, done: need === 0, ok: true };
+    if (r.done) return r;
+    if (noT) {
+      r.start = now; r.end = new Date(now.getTime() + mins * 6e4);
+    } else {
+      const s = new Date(target.getTime() - mins * 6e4);
+      if (s >= now) { r.start = s; r.end = target; }
+      else { r.ok = false; r.start = now; r.end = new Date(now.getTime() + mins * 6e4); }
+    }
+    return r;
+  });
+
+  const best = (!noT && need > 0) ? rows.find(r => r.ok) : null;
+
+  const bn = $('banner');
+  if (need === 0) {
+    bn.className = 'banner good';
+    bn.textContent = 'แบตฯ ถึงเป้า ' + t + '% แล้ว ✓ ไม่ต้องชาร์จเพิ่ม';
+  } else if (noT) {
+    bn.className = 'banner info';
+    bn.textContent = 'ชาร์จจาก ' + b + '% ถึง ' + t + '% ต้องเติมประมาณ ' + need.toFixed(1) + ' kWh · เริ่มตอนนี้';
+  } else if (best) {
+    bn.className = 'banner good';
+    bn.textContent = 'แนะนำ ' + best.c.a + 'A: ชาร์จช้าที่สุดที่ยังเสร็จทัน ' + when(target, now) + ' เริ่มชาร์จ ' + when(best.start, now);
+  } else {
+    const fast = rows[rows.length - 1];
+    bn.className = 'banner warn';
+    bn.textContent = 'ชาร์จไม่ทันเวลา ' + when(target, now) + ' · เร็วที่สุด (' + fast.c.a + 'A) เริ่มตอนนี้จะเสร็จ ' + when(fast.end, now);
+  }
+
+  $('list').innerHTML = rows.map(r => {
+    const c = r.c, isBest = best && best.c.a === c.a, isOpen = open.has(c.a);
+    let l1, l2 = '';
+    if (r.done) {
+      l1 = '<span class="ok">ถึงเป้าแล้ว ✓</span>';
+    } else {
+      l1 = dur(r.mins) + (isBest ? '<span class="tag best">แนะนำ</span>' : '');
+      if (r.ok) {
+        l2 = (noT ? 'ตอนนี้ ' + hm(r.start) : when(r.start, now)) + ' → ' + when(r.end, now);
+      } else {
+        const late = Math.round((r.end - target) / 6e4);
+        l1 += '<span class="tag late">ช้ากว่าเป้า ' + dur(late) + '</span>';
+        l2 = 'เริ่มตอนนี้ → ' + when(r.end, now);
+      }
+    }
+    const det = r.done ? '' :
+      '<div class="drow"><span>กำลังชาร์จจริง</span><span>' + c.i + ' ' + c.kw + ' kW</span></div>' +
+      '<div class="drow"><span>พลังงานที่ต้องเติม</span><span>' + need.toFixed(1) + ' kWh</span></div>' +
+      '<div class="drow"><span>เริ่มชาร์จ</span><span>' + when(r.start, now) + '</span></div>' +
+      '<div class="drow"><span>ชาร์จเสร็จ</span><span>' + when(r.end, now) + '</span></div>';
+    return '<div class="item ' + c.c + (isBest ? ' best' : '') + (isOpen && !r.done ? ' open' : '') + '">' +
+      '<button type="button" class="row" data-a="' + c.a + '" aria-expanded="' + (isOpen && !r.done) + '">' +
+      '<span class="badge">' + c.a + 'A</span>' +
+      '<span class="main"><div class="l1">' + l1 + '</div>' + (l2 ? '<div class="l2">' + l2 + '</div>' : '') + '</span>' +
+      (r.done ? '' : '<span class="chev">▼</span>') + '</button>' +
+      '<div class="detail">' + det + '</div></div>';
+  }).join('');
+
+  $('upd').textContent = 'คำนวณจากเวลา ' + hm(now) + ' น.';
+  $('results').style.display = 'block';
+  if (scroll) $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+['battery', 'tgt', 'target-time'].forEach(id => $(id).addEventListener('input', () => calc(false)));
+$('no-time').addEventListener('change', () => calc(false));
+$('chips').addEventListener('click', e => {
+  const c = e.target.closest('.chip');
+  if (c) { $('tgt').value = c.dataset.v; calc(false); }
+});
+$('list').addEventListener('click', e => {
+  const r = e.target.closest('.row');
+  if (!r) return;
+  const a = +r.dataset.a;
+  open.has(a) ? open.delete(a) : open.add(a);
+  calc(false);
+});
+$('refresh').addEventListener('click', () => calc(false));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') {
+    e.target.blur(); calc(true);
+  }
+});
+setInterval(() => calc(false), 30000);
+
+load();
+calc(false);
+</script>
+</body>
+</html>
